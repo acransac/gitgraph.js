@@ -188,4 +188,38 @@ describe("Branch", () => {
       });
     });
   });
+
+  describe("delete", () => {
+    let gitgraph;
+    let develop;
+    let feature;
+
+    beforeEach(() => {
+      gitgraph = new GitgraphCore().getUserApi();
+
+      develop = gitgraph.branch("develop");
+
+      develop.commit("develop first");
+
+      feature = gitgraph.branch("feature");
+
+      feature.commit("feature first");
+    });
+
+    it("should be deleted and not referenced", () => {
+      develop.checkout();
+
+      feature.delete();
+
+      const featureBranchIsReferencedByCommit =
+        [...gitgraph._graph.refs.namesPerCommit.entries()]
+          .reduce((allNames, [commit, names]) => [...allNames, ...names], [])
+          .includes("feature");
+
+      expect(feature._branch.isDeleted()
+               && !gitgraph._graph.branches.has("feature")
+               && !gitgraph._graph.refs.hasName("feature")
+               && !featureBranchIsReferencedByCommit).toBe(true);
+    });
+  })
 });
