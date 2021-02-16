@@ -6,7 +6,7 @@ import {
 } from "./gitgraph-user-api";
 import { TemplateOptions, CommitStyle } from "../template";
 import { Commit } from "../commit";
-import { Branch } from "../branch";
+import { Branch, createDeletedBranch } from "../branch";
 import { withoutUndefinedKeys, Omit } from "../utils";
 
 export { BranchUserApi, GitgraphMergeOptions };
@@ -93,6 +93,44 @@ class BranchUserApi<TNode> {
     if (!options) options = {};
 
     this._commitWithParents(options, []);
+    this._onGraphUpdate();
+
+    return this;
+  }
+
+  /**
+   * Delete the branch (as `git branch -d`)
+   */
+  public delete(): this {
+    // Delete all references to the branch from the graph (graph.branches and graph.refs)
+    // and from the commits (commit.refs). Then, make the branch instance a deleted branch.
+    // Like in git, the commits and tags in the deleted branch remain in the graph
+    const branchCommits = function* (graph, branch) {
+      const lookupCommit = (graph, commitHash) => graph.commits.find(({hash}) => hash === commitHash);
+
+      let currentCommit = lookupCommit(graph, graph.refs.getCommit(branch.name));
+
+      while (currentCommit.hash !== branch.parentCommitHash) {
+        yield currentCommit;
+
+        currentCommit = lookupCommit(graph, currentCommit.parents[0]);
+      }
+
+      return;
+    }(this._graph, this._branch);
+
+    [...branchCommits].forEach(commit => {
+      commit.refs = commit.refs.filter(branchName => branchName !== this.name);
+
+      this._graph.refs.removeNameFrom(commit.hash, this.name);
+    });
+
+    this._graph.refs.commitPerName.delete(this.name);
+
+    this._graph.branches.delete(this.name);
+
+    this._branch = createDeletedBranch(this._graph, this._branch.style, () => {});
+
     this._onGraphUpdate();
 
     return this;

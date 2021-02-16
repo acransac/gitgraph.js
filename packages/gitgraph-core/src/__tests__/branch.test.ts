@@ -211,14 +211,19 @@ describe("Branch", () => {
 
       feature.delete();
 
-      const featureBranchIsReferencedByCommit =
+      const featureBranchIsReferencedByGraph =
         [...gitgraph._graph.refs.namesPerCommit.entries()]
           .reduce((allNames, [commit, names]) => [...allNames, ...names], [])
           .includes("feature");
 
+      const featureBranchIsReferencedByCommit =
+        gitgraph._graph.commits.reduce((allNames, {refs}) => [...allNames, ...refs], [])
+                               .includes("feature");
+
       expect(feature._branch.isDeleted()
                && !gitgraph._graph.branches.has("feature")
                && !gitgraph._graph.refs.hasName("feature")
+               && !featureBranchIsReferencedByGraph
                && !featureBranchIsReferencedByCommit).toBe(true);
     });
   })
