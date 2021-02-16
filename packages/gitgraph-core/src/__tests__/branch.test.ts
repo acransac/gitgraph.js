@@ -226,5 +226,9 @@ describe("Branch", () => {
                && !featureBranchIsReferencedByGraph
                && !featureBranchIsReferencedByCommit).toBe(true);
     });
+
+    it("should throw if the branch is checked out", () => {
+      expect(() => feature.delete()).toThrow(`Cannot delete the checked out branch "feature"`);
+    });
   })
 });

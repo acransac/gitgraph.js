@@ -105,6 +105,10 @@ class BranchUserApi<TNode> {
     // Delete all references to the branch from the graph (graph.branches and graph.refs)
     // and from the commits (commit.refs). Then, make the branch instance a deleted branch.
     // Like in git, the commits and tags in the deleted branch remain in the graph
+    if (this._graph.refs.getCommit("HEAD") === this._graph.refs.getCommit(this.name)) {
+      throw new Error(`Cannot delete the checked out branch "${this.name}"`);
+    }
+
     const branchCommits = function* (graph, branch) {
       const lookupCommit = (graph, commitHash) => graph.commits.find(({hash}) => hash === commitHash);
 
