@@ -341,6 +341,16 @@ class BranchUserApi<TNode> {
     } as CommitStyle;
   }
 
+  private _isReferenced(): boolean {
+    return this._graph.branches.has(this.name) ||
+           this._graph.refs.hasName(this.name) ||
+           [...this._graph.refs.namesPerCommit.entries()]
+             .reduce((allNames, [commit, names]) => [...allNames, ...names], [])
+             .includes(this.name) ||
+           this._graph.commits
+             .reduce((allNames, {refs}) => [...allNames, ...refs], [])
+             .includes(this.name)
+  }
   // tslint:enable:variable-name
 }
 
