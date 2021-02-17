@@ -67,6 +67,10 @@ class BranchUserApi<TNode> {
    */
   public branch(name: string): BranchUserApi<TNode>;
   public branch(args: any): BranchUserApi<TNode> {
+    if (this._branch.isDeleted() && !this._isReferenced()) {
+      throw new Error(`Cannot branch from the deleted branch "${this.name}"`);
+    }
+
     const options: GitgraphBranchOptions<TNode> =
       typeof args === "string" ? { name: args } : args;
 

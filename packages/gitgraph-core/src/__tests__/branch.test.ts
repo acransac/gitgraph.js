@@ -217,5 +217,13 @@ describe("Branch", () => {
     it("should throw if the branch is checked out", () => {
       expect(() => feature.delete()).toThrow(`Cannot delete the checked out branch "feature"`);
     });
+
+    it("should throw when branching from a deleted branch", () => {
+      develop.checkout();
+
+      feature.delete();
+
+      expect(() => feature.branch("other-feature")).toThrow(`Cannot branch from the deleted branch "feature"`);
+    });
   })
 });
