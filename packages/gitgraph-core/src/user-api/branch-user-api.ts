@@ -92,6 +92,10 @@ class BranchUserApi<TNode> {
    */
   public commit(options?: GitgraphCommitOptions<TNode>): this;
   public commit(options?: GitgraphCommitOptions<TNode> | string): this {
+    if (this._branch.isDeleted() && !this._isReferenced()) {
+      throw new Error(`Cannot commit on the deleted branch "${this.name}"`);
+    }
+
     // Deal with shorter syntax
     if (typeof options === "string") options = { subject: options };
     if (!options) options = {};

@@ -225,5 +225,13 @@ describe("Branch", () => {
 
       expect(() => feature.branch("other-feature")).toThrow(`Cannot branch from the deleted branch "feature"`);
     });
+
+    it("should throw when committing on a deleted branch", () => {
+      develop.checkout();
+
+      feature.delete();
+
+      expect(() => feature.commit("other commit")).toThrow(`Cannot commit on the deleted branch "feature"`);
+    });
   })
 });
