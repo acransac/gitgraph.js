@@ -243,5 +243,21 @@ describe("Branch", () => {
 
       expect(feature._branch.isDeleted() && !feature._isReferenced()).toBe(true);
     });
+
+    it("should throw when merging a deleted branch to an existing one", () => {
+      develop.checkout();
+
+      feature.delete();
+
+      expect(() => develop.merge(feature)).toThrow(`The branch called "feature" is unknown`);
+    });
+
+    it("should throw when merging some branch to a deleted branch", () => {
+      develop.checkout();
+
+      feature.delete();
+
+      expect(() => feature.merge(develop)).toThrow(`Cannot merge to the deleted branch "feature"`);
+    });
   })
 });

@@ -169,6 +169,10 @@ class BranchUserApi<TNode> {
    */
   public merge(options: GitgraphMergeOptions<TNode>): this;
   public merge(...args: any[]): this {
+    if (this._branch.isDeleted() && !this._isReferenced()) {
+      throw new Error(`Cannot merge to the deleted branch "${this.name}"`);
+    }
+
     let options = args[0];
     if (!isBranchMergeOptions<TNode>(options)) {
       options = {
