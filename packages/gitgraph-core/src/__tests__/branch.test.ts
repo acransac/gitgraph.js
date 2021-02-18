@@ -267,5 +267,13 @@ describe("Branch", () => {
 
       expect(() => feature.tag("some tag")).toThrow(`Cannot tag on the deleted branch "feature"`);
     });
+
+    it("should throw when checking out a deleted branch", () => {
+      develop.checkout();
+
+      feature.delete();
+
+      expect(() => feature.checkout()).toThrow(`Cannot checkout the deleted branch "feature"`);
+    });
   })
 });

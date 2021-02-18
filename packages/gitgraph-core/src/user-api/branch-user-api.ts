@@ -252,6 +252,10 @@ class BranchUserApi<TNode> {
    * Checkout onto this branch and update "HEAD" in refs
    */
   public checkout(): this {
+    if (this._branch.isDeleted() && !this._isReferenced()) {
+      throw new Error(`Cannot checkout the deleted branch "${this.name}"`);
+    }
+
     const target = this._branch;
     const headCommit = this._graph.refs.getCommit(target.name);
     this._graph.currentBranch = target;
