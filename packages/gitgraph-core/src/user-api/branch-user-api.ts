@@ -235,6 +235,10 @@ class BranchUserApi<TNode> {
    */
   public tag(name: BranchTagOptions<TNode>["name"]): this;
   public tag(options?: any): this {
+    if (this._branch.isDeleted() && !this._isReferenced()) {
+      throw new Error(`Cannot tag on the deleted branch "${this.name}"`);
+    }
+
     if (typeof options === "string") {
       this._graph.getUserApi().tag({ name: options, ref: this._branch.name });
     } else {

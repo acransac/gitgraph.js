@@ -234,7 +234,7 @@ describe("Branch", () => {
       expect(() => feature.commit("other commit")).toThrow(`Cannot commit on the deleted branch "feature"`);
     });
 
-    it("should silently make nothing when deleting twice", () => {
+    it("should silently do nothing when deleting twice", () => {
       develop.checkout();
 
       feature.delete();
@@ -258,6 +258,14 @@ describe("Branch", () => {
       feature.delete();
 
       expect(() => feature.merge(develop)).toThrow(`Cannot merge to the deleted branch "feature"`);
+    });
+
+    it("should throw when tagging on a deleted branch", () => {
+      develop.checkout();
+
+      feature.delete();
+
+      expect(() => feature.tag("some tag")).toThrow(`Cannot tag on the deleted branch "feature"`);
     });
   })
 });
