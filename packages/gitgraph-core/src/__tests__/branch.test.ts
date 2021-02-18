@@ -233,5 +233,15 @@ describe("Branch", () => {
 
       expect(() => feature.commit("other commit")).toThrow(`Cannot commit on the deleted branch "feature"`);
     });
+
+    it("should silently make nothing when deleting twice", () => {
+      develop.checkout();
+
+      feature.delete();
+
+      feature.delete();
+
+      expect(feature._branch.isDeleted() && !feature._isReferenced()).toBe(true);
+    });
   })
 });

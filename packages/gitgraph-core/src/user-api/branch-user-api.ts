@@ -122,7 +122,7 @@ class BranchUserApi<TNode> {
 
       let currentCommit = lookupCommit(graph, graph.refs.getCommit(branch.name));
 
-      while (currentCommit.hash !== branch.parentCommitHash) {
+      while (currentCommit && currentCommit.hash !== branch.parentCommitHash) {
         yield currentCommit;
 
         currentCommit = lookupCommit(graph, currentCommit.parents[0]);
