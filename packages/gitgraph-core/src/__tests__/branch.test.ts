@@ -214,6 +214,20 @@ describe("Branch", () => {
       expect(feature._branch.isDeleted() && !feature._isReferenced()).toBe(true);
     });
 
+    it("should leave commits and tags from the deleted branch in the graph", () => {
+      feature.tag("some tag");
+
+      const featureCommit = gitgraph._graph.refs.getCommit("feature");
+
+      develop.checkout();
+
+      feature.delete();
+
+      expect(gitgraph._graph.commits.find(({hash}) => hash === featureCommit)
+               && gitgraph._graph.refs.hasCommit(featureCommit)
+               && gitgraph._graph.tags.hasName("some tag")).toBe(true);
+    });
+
     it("should throw if the branch is checked out", () => {
       expect(() => feature.delete()).toThrow(`Cannot delete the checked out branch "feature"`);
     });
