@@ -117,8 +117,10 @@ class BranchUserApi<TNode> {
       throw new Error(`Cannot delete the checked out branch "${this.name}"`);
     }
 
-    const branchCommits = function* (graph, branch) {
-      const lookupCommit = (graph, commitHash) => graph.commits.find(({hash}) => hash === commitHash);
+    const branchCommits = function* (graph: GitgraphCore<TNode>, branch: Branch<TNode>) {
+      const lookupCommit = (graph: GitgraphCore<TNode>, commitHash: Commit["hash"] | undefined) => {
+        return graph.commits.find(({hash}) => hash === commitHash);
+      };
 
       let currentCommit = lookupCommit(graph, graph.refs.getCommit(branch.name));
 
@@ -133,11 +135,9 @@ class BranchUserApi<TNode> {
 
     [...branchCommits].forEach(commit => {
       commit.refs = commit.refs.filter(branchName => branchName !== this.name);
-
-      this._graph.refs.removeNameFrom(commit.hash, this.name);
     });
 
-    this._graph.refs.commitPerName.delete(this.name);
+    this._graph.refs.delete(this.name);
 
     this._graph.branches.delete(this.name);
 
@@ -365,10 +365,10 @@ class BranchUserApi<TNode> {
     return this._graph.branches.has(this.name) ||
            this._graph.refs.hasName(this.name) ||
            [...this._graph.refs.namesPerCommit.entries()]
-             .reduce((allNames, [commit, names]) => [...allNames, ...names], [])
+             .reduce((allNames: string[], [commit, names]) => [...allNames, ...names], [])
              .includes(this.name) ||
            this._graph.commits
-             .reduce((allNames, {refs}) => [...allNames, ...refs], [])
+             .reduce((allNames: string[], {refs}) => [...allNames, ...refs], [])
              .includes(this.name)
   }
   // tslint:enable:variable-name
