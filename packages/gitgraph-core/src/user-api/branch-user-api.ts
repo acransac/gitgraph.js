@@ -364,9 +364,6 @@ class BranchUserApi<TNode> {
   private _isReferenced(): boolean {
     return this._graph.branches.has(this.name) ||
            this._graph.refs.hasName(this.name) ||
-           [...this._graph.refs.namesPerCommit.entries()]
-             .reduce((allNames: string[], [commit, names]) => [...allNames, ...names], [])
-             .includes(this.name) ||
            this._graph.commits
              .reduce((allNames: string[], {refs}) => [...allNames, ...refs], [])
              .includes(this.name)
