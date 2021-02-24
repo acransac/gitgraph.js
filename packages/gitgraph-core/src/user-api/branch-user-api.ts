@@ -113,16 +113,28 @@ class BranchUserApi<TNode> {
     // Delete all references to the branch from the graph (graph.branches and graph.refs)
     // and from the commits (commit.refs). Then, make the branch instance a deleted branch.
     // Like in git, the commits and tags in the deleted branch remain in the graph
-    if (this._graph.refs.getCommit("HEAD") === this._graph.refs.getCommit(this.name)) {
+    if (
+      this._graph.refs.getCommit("HEAD") ===
+      this._graph.refs.getCommit(this.name)
+    ) {
       throw new Error(`Cannot delete the checked out branch "${this.name}"`);
     }
 
-    const branchCommits = function* (graph: GitgraphCore<TNode>, branch: Branch<TNode>) {
-      const lookupCommit = (graph: GitgraphCore<TNode>, commitHash: Commit["hash"] | undefined) => {
-        return graph.commits.find(({hash}) => hash === commitHash);
+    const branchCommits = (function* (
+      graph: GitgraphCore<TNode>,
+      branch: Branch<TNode>,
+    ) {
+      const lookupCommit = (
+        graph: GitgraphCore<TNode>,
+        commitHash: Commit["hash"] | undefined,
+      ) => {
+        return graph.commits.find(({ hash }) => hash === commitHash);
       };
 
-      let currentCommit = lookupCommit(graph, graph.refs.getCommit(branch.name));
+      let currentCommit = lookupCommit(
+        graph,
+        graph.refs.getCommit(branch.name),
+      );
 
       while (currentCommit && currentCommit.hash !== branch.parentCommitHash) {
         yield currentCommit;
@@ -131,17 +143,21 @@ class BranchUserApi<TNode> {
       }
 
       return;
-    }(this._graph, this._branch);
+    })(this._graph, this._branch);
 
-    [...branchCommits].forEach(commit => {
-      commit.refs = commit.refs.filter(branchName => branchName !== this.name);
+    [...branchCommits].forEach((commit) => {
+      commit.refs = commit.refs.filter(
+        (branchName) => branchName !== this.name,
+      );
     });
 
     this._graph.refs.delete(this.name);
 
     this._graph.branches.delete(this.name);
 
-    this._branch = createDeletedBranch(this._graph, this._branch.style, () => {});
+    this._branch = createDeletedBranch(this._graph, this._branch.style, () => {
+      // do nothing
+    });
 
     this._onGraphUpdate();
 
@@ -362,11 +378,13 @@ class BranchUserApi<TNode> {
   }
 
   private _isReferenced(): boolean {
-    return this._graph.branches.has(this.name) ||
-           this._graph.refs.hasName(this.name) ||
-           this._graph.commits
-             .reduce((allNames: string[], {refs}) => [...allNames, ...refs], [])
-             .includes(this.name)
+    return (
+      this._graph.branches.has(this.name) ||
+      this._graph.refs.hasName(this.name) ||
+      this._graph.commits
+        .reduce((allNames: string[], { refs }) => [...allNames, ...refs], [])
+        .includes(this.name)
+    );
   }
   // tslint:enable:variable-name
 }
