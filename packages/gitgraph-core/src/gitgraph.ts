@@ -222,25 +222,28 @@ class GitgraphCore<TNode = SVGElement> {
     // were in a deleted branch. If the latter was merged beforehand
     // they are reachable and are rendered. Others are not
     const reachableUnassociatedCommits = (() => {
-      const unassociatedCommits = new Set(this.commits.reduce((
-        commits: Commit["hash"][],
-        { hash }: { hash: Commit["hash"] }
-      ) =>
-        !branches.has(hash) ? [...commits, hash] : commits,
-        []
-      ));
+      const unassociatedCommits = new Set(
+        this.commits.reduce(
+          (commits: Commit["hash"][], { hash }: { hash: Commit["hash"] }) =>
+            !branches.has(hash) ? [...commits, hash] : commits,
+          [],
+        ),
+      );
 
-      const tipsOfMergedBranches = this.commits.reduce((
-        tipsOfMergedBranches: Commit<TNode>[],
-        commit: Commit<TNode>
-      ) =>
-        commit.parents.length > 1
-          ? [...tipsOfMergedBranches,
-             ...commit.parents.slice(1)
-                              .map((parentHash) =>
-                                     this.commits.find(({ hash }) => parentHash === hash)!)]
-          : tipsOfMergedBranches,
-        []
+      const tipsOfMergedBranches = this.commits.reduce(
+        (tipsOfMergedBranches: Commit<TNode>[], commit: Commit<TNode>) =>
+          commit.parents.length > 1
+            ? [
+                ...tipsOfMergedBranches,
+                ...commit.parents
+                  .slice(1)
+                  .map(
+                    (parentHash) =>
+                      this.commits.find(({ hash }) => parentHash === hash)!,
+                  ),
+              ]
+            : tipsOfMergedBranches,
+        [],
       );
 
       const reachableCommits = new Set();
@@ -251,17 +254,21 @@ class GitgraphCore<TNode = SVGElement> {
         while (currentCommit && unassociatedCommits.has(currentCommit.hash)) {
           reachableCommits.add(currentCommit.hash);
 
-          currentCommit = currentCommit.parents.length > 0
-            ? this.commits.find(({ hash }) => currentCommit!.parents[0] === hash)
-            : undefined;
+          currentCommit =
+            currentCommit.parents.length > 0
+              ? this.commits.find(
+                  ({ hash }) => currentCommit!.parents[0] === hash,
+                )
+              : undefined;
         }
       });
 
       return reachableCommits;
     })();
 
-    const commitsToRender = this.commits.filter(({ hash }) =>
-      branches.has(hash) || reachableUnassociatedCommits.has(hash),
+    const commitsToRender = this.commits.filter(
+      ({ hash }) =>
+        branches.has(hash) || reachableUnassociatedCommits.has(hash),
     );
 
     const commitsWithBranches = commitsToRender.map((commit) =>
